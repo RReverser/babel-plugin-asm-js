@@ -98,10 +98,10 @@ var ProgramState = (function () {
 		if (!importRec) {
 			var asmType = undefined;
 			if (kind === 'stdlib') {
-				_util.assert.call(ref, path.length === 2, 'too long path');
 				if (topPath === 'Math') {
+					_util.assert.call(ref, path.length === 2, 'too long path');
 					asmType = _tables.STDLIB_MATH_TYPES.get(path[1]);
-					_util.assert.call(ref, asmType, 'Unknown Math property');
+					_util.assert.call(ref, asmType, 'unknown Math property');
 				} else {
 					asmType = _util.GLOBALS.get(topPath);
 				}

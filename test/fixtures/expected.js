@@ -1,16 +1,14 @@
 "use strict";
 
-var _interopRequireDefault = require("babel-runtime/helpers/interop-require-default")["default"];
+var _selfGlobal = require("babel-runtime/helpers/self-global")["default"];
+
+var _defaults = require("babel-runtime/helpers/defaults")["default"];
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _stuff = require("./stuff");
-
-var _stuff2 = _interopRequireDefault(_stuff);
-
-var exports = (function asm(stdlib, foreign, heap) {
+_defaults(exports, (function asm(stdlib, foreign, heap) {
 	"use asm";
 	var _Math$log = stdlib.Math.log,
 	    _Math$exp = stdlib.Math.exp;
@@ -36,7 +34,6 @@ var exports = (function asm(stdlib, foreign, heap) {
 	function geometricMean(start, end) {
 		start = start | 0;
 		end = end | 0;
-		var ;
 
 		_console$log(start, end);
 		return + +_Math$exp(+logSum(start, end) / +(end - start | 0));
@@ -44,10 +41,8 @@ var exports = (function asm(stdlib, foreign, heap) {
 	return {
 		geometricMean: geometricMean
 	};
-})(typeof self !== "undefined" ? self : global, {
+})(_selfGlobal(), {
 	_console$log: console.log
-}, new ArrayBuffer(0x10000));
+}, new ArrayBuffer(65536)));
 
-var _geometricMean = exports.geometricMean;
-exports.geometricMean = _geometricMean;
 // directive

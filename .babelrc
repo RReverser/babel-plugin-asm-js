@@ -1,5 +1,5 @@
 {
     "stage": 0,
     "loose": ["es6.forOf", "es6.classes"],
-    "optional": ["runtime", "validation.undeclaredVariableCheck"]
+    "optional": ["runtime"]
 }

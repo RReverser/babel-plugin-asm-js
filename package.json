@@ -11,8 +11,8 @@
   },
   "scripts": {
     "build": "babel src --out-dir dist --stage 0",
-    "watch": "babel src --out-dir dist --stage 0 --watch",
-    "test": "mocha"
+    "test": "mocha",
+    "watch": "babel src --out-dir dist --stage 0 --watch"
   },
   "keywords": [
     "babel-plugin"

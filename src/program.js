@@ -77,10 +77,10 @@ export class ProgramState {
 		if (!importRec) {
 			let asmType;
 			if (kind === 'stdlib') {
-				ref::assert(path.length === 2, 'too long path');
 				if (topPath === 'Math') {
+					ref::assert(path.length === 2, 'too long path');
 					asmType = STDLIB_MATH_TYPES.get(path[1]);
-					ref::assert(asmType, 'Unknown Math property');
+					ref::assert(asmType, 'unknown Math property');
 				} else {
 					asmType = GLOBALS.get(topPath);
 				}
