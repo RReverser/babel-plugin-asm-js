@@ -123,7 +123,7 @@ var funcVisitor = {
 				if (arg === null) {
 					return;
 				}
-				return [{ type: 'ExpressionStatement', expression: arg }, node];
+				return [state.t.expressionStatement(arg), node];
 			}
 			node.argument = (_context = this.get('argument'), _util.wrap).call(_context, state.returnType, true);
 		}
@@ -138,29 +138,24 @@ var funcVisitor = {
 			if (node.init.type === 'Literal' && node.init.value === 0) {
 				return this.dangerouslyRemove();
 			}
-			node.init = { type: 'Literal', value: 0, raw: asmType.subtype(_types.Intish) ? '0' : '0.0' };
-			return {
-				type: 'AssignmentExpression',
-				left: node.id,
-				operator: '=',
-				right: init.node
-			};
+			node.init = state.t.literal(0);
+			if (!asmType.subtype(_types.Intish)) {
+				node.init.raw = '0.0';
+			}
+			return state.t.assignmentExpression('=', node.id, init.node);
 		}
 	},
 
 	VariableDeclaration: {
+		enter: function VariableDeclaration(node) {
+			_util.assert.call(this, node.kind === 'var', 'only var declarations are currently supported');
+		},
 		exit: function VariableDeclaration(node, parent, scope, state) {
-			var expr = {
-				type: 'SequenceExpression',
-				expressions: node.declarations
-			};
+			var expr = state.t.sequenceExpression(node.declarations);
 			if (parent.type === 'ForStatement') {
 				return expr;
 			}
-			return {
-				type: 'ExpressionStatement',
-				expression: expr
-			};
+			return state.t.expressionStatement(expr);
 		}
 	},
 
@@ -186,6 +181,7 @@ var funcVisitor = {
 var FuncState = function FuncState(programState, returnType) {
 	_classCallCheck(this, FuncState);
 
+	this.t = programState.t;
 	this.program = programState;
 	this.returnType = returnType;
 	this.vars = [];
@@ -203,25 +199,13 @@ function visit(programState) {
 		paramTypes.push(asmType);
 		var node = param.node;
 
-		return {
-			type: 'ExpressionStatement',
-			expression: {
-				type: 'AssignmentExpression',
-				left: node,
-				operator: '=',
-				right: _util.wrap.call(param, asmType, true)
-			}
-		};
+		return programState.t.expressionStatement(programState.t.assignmentExpression('=', node, _util.wrap.call(param, asmType, true)));
 	});
 	var returnType = (_context3 = this.get('returnType'), _util.flowToAsm).call(_context3);
 	this.setData('asmType', new _types.Arrow(paramTypes, returnType));
 	var funcState = new FuncState(programState, returnType);
 	this.get('body').traverse(funcVisitor, funcState);
-	this.get('body.body.0').insertBefore({
-		type: 'VariableDeclaration',
-		kind: 'var',
-		declarations: funcState.vars
-	});
+	this.get('body.body.0').insertBefore(programState.t.variableDeclaration('var', funcState.vars));
 	this.get('body.body.0').insertBefore(wrappedParams);
 	programState.funcs.push(this.node);
 }

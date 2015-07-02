@@ -28,7 +28,8 @@ var programVisitor = {
 };
 
 export class ProgramState {
-	constructor() {
+	constructor(types) {
+		this.t = types;
 		this.outside = [];
 		this.stdlibImports = new Map();
 		this.foreignImports = new Map();

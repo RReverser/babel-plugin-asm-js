@@ -85,7 +85,7 @@ var funcVisitor = {
 					return;
 				}
 				return [
-					{ type: 'ExpressionStatement', expression: arg },
+					state.t.expressionStatement(arg),
 					node
 				];
 			}
@@ -102,29 +102,24 @@ var funcVisitor = {
 			if (node.init.type === 'Literal' && node.init.value === 0) {
 				return this.dangerouslyRemove();
 			}
-			node.init = { type: 'Literal', value: 0, raw: asmType.subtype(Intish) ? '0' : '0.0' };
-			return {
-				type: 'AssignmentExpression',
-				left: node.id,
-				operator: '=',
-				right: init.node
-			};
+			node.init = state.t.literal(0);
+			if (!asmType.subtype(Intish)) {
+				node.init.raw = '0.0';
+			}
+			return state.t.assignmentExpression('=', node.id, init.node);
 		}
 	},
 
 	VariableDeclaration: {
+		enter: function VariableDeclaration(node) {
+			this::assert(node.kind === 'var', 'only var declarations are currently supported');
+		},
 		exit: function VariableDeclaration(node, parent, scope, state) {
-			var expr = {
-				type: 'SequenceExpression',
-				expressions: node.declarations
-			};
+			var expr = state.t.sequenceExpression(node.declarations);
 			if (parent.type === 'ForStatement') {
 				return expr;
 			}
-			return {
-				type: 'ExpressionStatement',
-				expression: expr
-			};
+			return state.t.expressionStatement(expr);
 		}
 	},
 
@@ -149,6 +144,7 @@ var funcVisitor = {
 
 class FuncState {
 	constructor(programState, returnType) {
+		this.t = programState.t;
 		this.program = programState;
 		this.returnType = returnType;
 		this.vars = [];
@@ -162,25 +158,17 @@ export default function visit(programState) {
 		param.setData('asmType', asmType);
 		paramTypes.push(asmType);
 		var { node } = param;
-		return {
-			type: 'ExpressionStatement',
-			expression: {
-				type: 'AssignmentExpression',
-				left: node,
-				operator: '=',
-				right: param::wrap(asmType, true)
-			}
-		};
+		return programState.t.expressionStatement(programState.t.assignmentExpression(
+			'=',
+			node,
+			param::wrap(asmType, true)
+		));
 	});
 	var returnType = this.get('returnType')::flowToAsm();
 	this.setData('asmType', new Arrow(paramTypes, returnType));
 	var funcState = new FuncState(programState, returnType);
 	this.get('body').traverse(funcVisitor, funcState);
-	this.get('body.body.0').insertBefore({
-		type: 'VariableDeclaration',
-		kind: 'var',
-		declarations: funcState.vars
-	});
+	this.get('body.body.0').insertBefore(programState.t.variableDeclaration('var', funcState.vars));
 	this.get('body.body.0').insertBefore(wrappedParams);
 	programState.funcs.push(this.node);
 }

@@ -17,7 +17,6 @@ var tmplAsm = (0, _estemplate.compile)('%= outside %;\nvar exports = (function a
 module.exports = function (_ref) {
 	var Transformer = _ref.Transformer;
 	var t = _ref.types;
-	var parse = _ref.parse;
 
 	function reattach(member, newRoot) {
 		if (t.isIdentifier(member)) {
@@ -33,7 +32,7 @@ module.exports = function (_ref) {
 			if (!directive.isExpressionStatement()) return;
 			directive = directive.get('expression');
 			if (!directive.isLiteral({ value: 'use asm' })) return;
-			var state = new _program.ProgramState();
+			var state = new _program.ProgramState(t);
 			_program2['default'].call(this, state);
 			var tmpl = tmplAsm({
 				outside: state.outside,

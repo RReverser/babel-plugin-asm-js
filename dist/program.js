@@ -46,9 +46,10 @@ var programVisitor = {
 };
 
 var ProgramState = (function () {
-	function ProgramState() {
+	function ProgramState(types) {
 		_classCallCheck(this, ProgramState);
 
+		this.t = types;
 		this.outside = [];
 		this.stdlibImports = new _Map();
 		this.foreignImports = new _Map();

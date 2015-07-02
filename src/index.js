@@ -14,7 +14,7 @@ var exports = (function asm(stdlib, foreign, heap) {
 })(typeof self !== "undefined" ? self : global, <%= foreign %>, new ArrayBuffer(0x10000));
 %= exportOutside %;`);
 
-module.exports = function ({ Transformer, types: t, parse }) {
+module.exports = function ({ Transformer, types: t }) {
 	function reattach(member, newRoot) {
 		if (t.isIdentifier(member)) {
 			return t.memberExpression(newRoot, member);
@@ -32,7 +32,7 @@ module.exports = function ({ Transformer, types: t, parse }) {
 			if (!directive.isExpressionStatement()) return;
 			directive = directive.get('expression');
 			if (!directive.isLiteral({ value: 'use asm' })) return;
-			var state = new ProgramState();
+			var state = new ProgramState(t);
 			this::visitProgram(state);
 			var tmpl = tmplAsm({
 				outside: state.outside,
