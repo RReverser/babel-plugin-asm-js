@@ -1,12 +1,12 @@
 "use strict";
 
-var _selfGlobal = require("babel-runtime/helpers/self-global")["default"];
-
-var _defaults = require("babel-runtime/helpers/defaults")["default"];
-
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _selfGlobal = require("babel-runtime/helpers/self-global")["default"];
+
+var _defaults = require("babel-runtime/helpers/defaults")["default"];
 
 _defaults(exports, (function asm(stdlib, foreign, heap) {
 	"use asm";
