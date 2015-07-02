@@ -205,7 +205,9 @@ function visit(programState) {
 	this.setData('asmType', new _types.Arrow(paramTypes, returnType));
 	var funcState = new FuncState(programState, returnType);
 	this.get('body').traverse(funcVisitor, funcState);
-	this.get('body.body.0').insertBefore(programState.t.variableDeclaration('var', funcState.vars));
+	if (funcState.vars.length) {
+		this.get('body.body.0').insertBefore(programState.t.variableDeclaration('var', funcState.vars));
+	}
 	this.get('body.body.0').insertBefore(wrappedParams);
 	programState.funcs.push(this.node);
 }
