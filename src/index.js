@@ -43,7 +43,7 @@ module.exports = function ({ Plugin, types: t }) {
 					state.exports.values(),
 					({ exported, local }) => t.property('init', exported, local)
 				))));
-				var func = t.functionExpression(
+				var func = t.functionDeclaration(
 					t.identifier('asm'),
 					[t.identifier('stdlib'), t.identifier('foreign'), t.identifier('heap')],
 					t.blockStatement(funcBody)
@@ -70,6 +70,7 @@ module.exports = function ({ Plugin, types: t }) {
 						state.exports.values(),
 						({ uid }) => t.variableDeclarator(uid)
 					))),
+					func,
 					t.exportDefaultDeclaration(t.functionDeclaration(
 						t.identifier('initialize'),
 						[t.identifier('heap')],
@@ -79,7 +80,7 @@ module.exports = function ({ Plugin, types: t }) {
 								state.exports.values(),
 								({ exported, uid }) => t.property('init', exported, uid)
 							)),
-							t.callExpression(func, ['selfGlobal', 'foreign', 'heap'].map(t.identifier))
+							t.callExpression(t.identifier('asm'), ['selfGlobal', 'foreign', 'heap'].map(t.identifier))
 						))])
 					))
 				]);

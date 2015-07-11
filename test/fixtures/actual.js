@@ -7,7 +7,7 @@ type float = number;
 
 import stuff from './stuff';
 
-var values = new global.Float64Array(heap);
+var values = new Float64Array(heap);
 
 function logSum(start: int, end: int): double {
 	var sum = 0.0;
