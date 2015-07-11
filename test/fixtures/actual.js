@@ -22,5 +22,5 @@ function logSum(start: int, end: int): double {
 
 export function geometricMean(start: int, end: int): double {
 	console.log(start, end);
-	return Math.exp(logSum(start, end) / +((end - start)|0));
+	return Math.exp(logSum(start, end) / ((end - start: int): double));
 }

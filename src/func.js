@@ -152,6 +152,14 @@ var funcVisitor = {
 			this.setData('asmType', resultType);
 			this.replaceWith(this::wrap(resultType, true));
 		}
+	},
+
+	TypeCastExpression: {
+		exit: function TypeCastExpression(node) {
+			var asmType = this.get('typeAnnotation')::flowToAsm();
+			this.setData('asmType', asmType);
+			return this.get('expression')::wrap(asmType);
+		}
 	}
 };
 
