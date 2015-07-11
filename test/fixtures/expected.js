@@ -34,12 +34,12 @@ function initialize(heap) {
 			start = start | 0;
 			end = end | 0;
 			var sum = 0.0,
-			    p = 0,
-			    q = 0;
+			    _p = 0,
+			    _q = 0;
 
 			// asm.js forces byte addressing of the heap by requiring shifting by 3
-			for (p = start << 3, q = end << 3; p < q; p = p + 8 | 0) {
-				sum = sum + +_Math$log_func(values[p >> 3]);
+			for (_p = start << 3, _q = end << 3; _p < _q; _p = _p + 8 | 0) {
+				sum = sum + +_Math$log_func(values[_p >> 3]);
 			}
 
 			return +sum;

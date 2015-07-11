@@ -13,7 +13,7 @@ function logSum(start: int, end: int): double {
 	var sum = 0.0;
 
 	// asm.js forces byte addressing of the heap by requiring shifting by 3
-	for (var p = start << 3, q = end << 3; p < q; p = p + 8) {
+	for (let p = start << 3, q = end << 3; p < q; p = p + 8) {
 		sum = sum + Math.log(values[p>>3]);
 	}
 
