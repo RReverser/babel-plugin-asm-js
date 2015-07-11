@@ -106,6 +106,7 @@ var funcVisitor = {
 		enter: function VariableDeclarator(node, parent, scope) {
 			// Babel plugins can't depend on other transformations (yet?)
 			// so I have to loosely reimplement block scoping like this
+			this::assert(node.init, 'variable should have an initializer');
 			if (parent.kind !== 'var') {
 				scope.rename(node.id.name);
 			}
