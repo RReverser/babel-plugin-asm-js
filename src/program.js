@@ -61,6 +61,8 @@ export class ProgramState {
 		fullRef::assert(onlyIds, 'computed properties are not allowed');
 		path.unshift(ref.node.name);
 		var topPath = path[0];
+		var importName = path.join('$');
+		var expr = fullRef.node, outExpr = expr;
 		var kind, map;
 		if (topPath === 'Math' || GLOBALS.has(topPath)) {
 			kind = 'stdlib';
@@ -68,14 +70,13 @@ export class ProgramState {
 		} else {
 			kind = 'foreign';
 			map = this.foreignImports;
-		}
-		var importName = path.join('$'), expr = fullRef.node, outExpr = expr;
-		if (wrapFunc) {
-			importName += '_func';
-			let {t} = this;
-			outExpr = t.functionExpression(null, [], t.blockStatement([
-				t.returnStatement(t.callExpression(outExpr, [t.spreadElement(t.identifier('arguments'))]))
-			]));
+			if (wrapFunc) {
+				importName += '_func';
+				let {t} = this;
+				outExpr = t.functionExpression(null, [], t.blockStatement([
+					t.returnStatement(t.callExpression(outExpr, [t.spreadElement(t.identifier('arguments'))]))
+				]));
+			}
 		}
 		var importRec = map.get(importName);
 		if (!importRec) {

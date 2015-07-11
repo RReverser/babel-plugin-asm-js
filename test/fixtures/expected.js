@@ -21,8 +21,8 @@ exports._geometricMean = _geometricMean;
 
 function asm(stdlib, foreign, heap) {
 	"use asm";
-	var _Math$log_func = stdlib.Math.log,
-	    _Math$exp_func = stdlib.Math.exp;
+	var _Math$log = stdlib.Math.log,
+	    _Math$exp = stdlib.Math.exp;
 	var _console$log_func = foreign._console$log_func;
 
 	var values = new Float64Array(heap);
@@ -36,7 +36,7 @@ function asm(stdlib, foreign, heap) {
 
 		// asm.js forces byte addressing of the heap by requiring shifting by 3
 		for (_p = start << 3, _q = end << 3; _p < _q; _p = _p + 8 | 0) {
-			sum = sum + +_Math$log_func(values[_p >> 3]);
+			sum = sum + +_Math$log(values[_p >> 3]);
 		}
 
 		return +sum;
@@ -47,7 +47,7 @@ function asm(stdlib, foreign, heap) {
 		end = end | 0;
 
 		_console$log_func(start, end);
-		return + +_Math$exp_func(+logSum(start, end) / +(end - start | 0));
+		return + +_Math$exp(+logSum(start, end) / +(end - start | 0));
 	}
 	return {
 		geometricMean: geometricMean
