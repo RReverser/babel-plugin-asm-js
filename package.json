@@ -1,8 +1,8 @@
 {
-  "name": "babel-plugin-flow-asm-js",
+  "name": "babel-plugin-asm-js",
   "version": "1.0.0",
   "description": "Compile Flow annotated functions into asm.js",
-  "repository": "babel-plugins/babel-plugin-flow-asm-js",
+  "repository": "babel-plugins/babel-plugin-asm-js",
   "license": "MIT",
   "main": "lib/index.js",
   "devDependencies": {

@@ -1,11 +1,11 @@
-# babel-plugin-flow-asm-js
+# babel-plugin-asm-js
 
-Compile Flow annotated functions into asm.js
+Compile JavaScript + Flow into asm.js
 
 ## Installation
 
 ```sh
-$ npm install babel-plugin-flow-asm-js
+$ npm install babel-plugin-asm-js
 ```
 
 ## Usage
@@ -16,20 +16,20 @@ $ npm install babel-plugin-flow-asm-js
 
 ```json
 {
-  "plugins": ["flow-asm-js"]
+  "plugins": ["asm-js"]
 }
 ```
 
 ### Via CLI
 
 ```sh
-$ babel --plugins flow-asm-js script.js
+$ babel --plugins asm-js script.js
 ```
 
 ### Via Node API
 
 ```javascript
 require("babel-core").transform("code", {
-  plugins: ["flow-asm-js"]
+  plugins: ["asm-js"]
 });
 ```
