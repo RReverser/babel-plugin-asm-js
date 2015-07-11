@@ -19,10 +19,11 @@ module.exports = function ({ Plugin, types: t }) {
 
 		visitor: {
 			Program(node, parent, scope, file) {
+				this.skip();
 				var directive = this.get('body.0');
-				if (!directive.isExpressionStatement()) return this.skip();
+				if (!directive.isExpressionStatement()) return;
 				directive = directive.get('expression');
-				if (!directive.isLiteral({ value: 'use asm' })) return this.skip();
+				if (!directive.isLiteral({ value: 'use asm' })) return;
 				var state = new ProgramState(t);
 				this::visitProgram(state);
 				var funcBody = [t.expressionStatement(t.literal('use asm'))];
@@ -51,43 +52,41 @@ module.exports = function ({ Plugin, types: t }) {
 					[t.identifier('stdlib'), t.identifier('foreign'), t.identifier('heap')],
 					t.blockStatement(funcBody)
 				);
-				var exportOutside = t.callExpression(func, [
-					t.callExpression(file.addHelper('self-global'), []),
-					t.objectExpression(Array.from(
-						state.foreignImports.values(),
-						({ uid, expr }) => t.property('init', uid, expr)
-					)),
-					t.newExpression(t.identifier('ArrayBuffer'), [t.literal(0x10000)])
-				]);
-				switch (file.opts.modules) {
-					case 'amd':
-					case 'common':
-					case 'commonStrict':
-					case 'umd':
-						exportOutside = [
-							t.expressionStatement(t.callExpression(file.addHelper('defaults'), [
-								t.identifier('exports'),
-								exportOutside
-							]))
-						];
-						break;
-
-					default:
-						exportOutside = [
-							t.variableDeclaration('var', [t.variableDeclarator(
-								t.objectPattern(Array.from(
-									state.exports.values(),
-									({ exported, uid }) => t.property('init', exported, uid)
-								)),
-								exportOutside
-							)]),
-							t.exportNamedDeclaration(null, Array.from(
-								state.exports.values(),
-								({ uid, exported }) => t.exportSpecifier(uid, exported)
+				return t.program([
+					t.variableDeclaration('var', [
+						t.variableDeclarator(
+							t.identifier('selfGlobal'),
+							t.callExpression(file.addHelper('self-global'), [])
+						),
+						t.variableDeclarator(
+							t.identifier('foreign'),
+							t.objectExpression(Array.from(
+								state.foreignImports.values(),
+								({ uid, outExpr }) => t.property('init', uid, outExpr)
 							))
-						];
-				}
-				this.node.body = exportOutside;
+						),
+						t.variableDeclarator(
+							t.identifier('strings'),
+							t.arrayExpression(state.strings.map(t.literal))
+						)
+					]),
+					t.exportNamedDeclaration(t.variableDeclaration('var', Array.from(
+						state.exports.values(),
+						({ uid }) => t.variableDeclarator(uid)
+					))),
+					t.exportDefaultDeclaration(t.functionDeclaration(
+						t.identifier('initialize'),
+						[t.identifier('heap')],
+						t.blockStatement([t.returnStatement(t.assignmentExpression(
+							'=',
+							t.objectPattern(Array.from(
+								state.exports.values(),
+								({ exported, uid }) => t.property('init', exported, uid)
+							)),
+							t.callExpression(func, ['selfGlobal', 'foreign', 'heap'].map(t.identifier))
+						))])
+					))
+				]);
 			}
 		}
 	});

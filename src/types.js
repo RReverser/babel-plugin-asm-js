@@ -57,6 +57,8 @@ export const Fixnum = new ValueType('fixnum', [Signed, Unsigned]);
 
 export const Void = new ValueType('void');
 
+export const Str = new ValueType('string', [Extern]);
+
 // =============================================================================
 // Global Types
 // =============================================================================

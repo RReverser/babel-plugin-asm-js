@@ -1,10 +1,12 @@
 import { STDLIB_TYPES, HEAP_VIEW_TYPES } from './tables';
-import { Int, Double, Float, Extern } from './types';
+import { Int, Double, Float, Extern, Str } from './types';
 
 export const GLOBALS = new Map([...STDLIB_TYPES.entries(), ...HEAP_VIEW_TYPES.entries()]);
 
 export function typeError(msg) {
-	throw this.errorWithNode(msg, TypeError);
+	var e = this.errorWithNode(msg, TypeError);
+	Error.captureStackTrace(e, typeError);
+	throw e;
 }
 
 export function assert(cond, msg) {
@@ -15,12 +17,18 @@ export function assert(cond, msg) {
 
 const flowToAsmMappings = {
 	int: Int,
+	int32: Int,
 	double: Double,
-	float: Float
+	float64: Double,
+	float: Float,
+	float32: Float
 };
 
 export function flowToAsm() {
 	var annotation = this.get('typeAnnotation');
+	if (annotation.type === 'StringTypeAnnotation') {
+		return Str;
+	}
 	this::assert(annotation.type === 'GenericTypeAnnotation', 'only generic type annotations are accepted');
 	var type = annotation.node.id.name;
 	this::assert(type in flowToAsmMappings, `unknown type ${type}`);

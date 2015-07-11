@@ -1,4 +1,4 @@
-import { assert, wrap, GLOBALS } from './util';
+import { assert, wrap, GLOBALS, typeError } from './util';
 import visitFunc from './func';
 import { STDLIB_MATH_TYPES } from './tables';
 import { Func } from './types';
@@ -14,7 +14,7 @@ var programVisitor = {
 	},
 
 	ExportDefaultDeclaration(node, parent, scope, state) {
-		state.export(this, 'default');
+		this::typeError('Default declaration is reserved for initializer');
 	},
 
 	ImportDeclaration(node, parent, scope, state) {
@@ -37,9 +37,10 @@ export class ProgramState {
 		this.funcs = [];
 		this.funcTables = [];
 		this.exports = new Map();
+		this.strings = [];
 	}
 
-	import(ref) {
+	import(ref, wrapFunc) {
 		var path = [], onlyIds = true;
 		var fullRef = ref;
 		for (; ref.isMemberExpression(); ref = ref.get('object')) {
@@ -60,10 +61,6 @@ export class ProgramState {
 		fullRef::assert(onlyIds, 'computed properties are not allowed');
 		path.unshift(ref.node.name);
 		var topPath = path[0];
-		if (topPath === 'global') {
-			path.shift();
-			topPath = path[0];
-		}
 		var kind, map;
 		if (topPath === 'Math' || GLOBALS.has(topPath)) {
 			kind = 'stdlib';
@@ -72,7 +69,14 @@ export class ProgramState {
 			kind = 'foreign';
 			map = this.foreignImports;
 		}
-		var importName = path.join('$');
+		var importName = path.join('$'), expr = fullRef.node, outExpr = expr;
+		if (wrapFunc) {
+			importName += '_func';
+			let {t} = this;
+			outExpr = t.functionExpression(null, [], t.blockStatement([
+				t.returnStatement(t.callExpression(outExpr, [t.spreadElement(t.identifier('arguments'))]))
+			]));
+		}
 		var importRec = map.get(importName);
 		if (!importRec) {
 			let asmType;
@@ -90,7 +94,8 @@ export class ProgramState {
 			importRec = {
 				kind,
 				uid: ref.scope.generateUidIdentifier(importName),
-				expr: fullRef.node,
+				expr,
+				outExpr,
 				type: asmType
 			};
 			map.set(importName, importRec);

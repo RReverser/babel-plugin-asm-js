@@ -1,5 +1,5 @@
 import { assert, typeError, validateType, wrap, flowToAsm } from './util';
-import { Fixnum, Unsigned, Double, Arrow, Overloaded, Int, Intish } from './types';
+import { Fixnum, Unsigned, Double, Arrow, Overloaded, Int, Intish, Str } from './types';
 import { UNOPS, BINOPS } from './tables';
 
 const LIMIT_FIXNUM = (1 << 31) >>> 0;
@@ -45,10 +45,19 @@ var funcVisitor = {
 		}
 	},
 
-	Literal(node) {
+	Literal(node, parent, scope, state) {
 		var { value } = node;
-		this::assert(typeof value === 'number', 'only numeric literals are supported');
-		if (node.raw.indexOf('.') < 0) {
+		if (typeof value === 'string') {
+			let id = state.program.strings.indexOf(value);
+			if (id < 0) {
+				id = state.program.strings.push(value) - 1;
+			}
+			this.setData('asmType', Str);
+			node.value = id;
+			return;
+		}
+		this::assert(typeof value === 'number', 'only numeric and string literals are supported');
+		if (node.raw && node.raw.indexOf('.') < 0) {
 			if (value < LIMIT_FIXNUM) {
 				this.setData('asmType', Fixnum);
 				return;
@@ -72,7 +81,7 @@ var funcVisitor = {
 	},
 
 	MemberExpression(node, parent, scope, state) {
-		if (state.program.import(this)) {
+		if (state.program.import(this, parent.type === 'CallExpression')) {
 			this.skip();
 		}
 	},
@@ -94,6 +103,13 @@ var funcVisitor = {
 	},
 
 	VariableDeclarator: {
+		enter: function VariableDeclarator(node, parent, scope) {
+			// Babel plugins can't depend on other transformations (yet?)
+			// so I have to loosely reimplement block scoping like this
+			if (parent.kind !== 'var') {
+				scope.rename(node.id.name);
+			}
+		},
 		exit: function VariableDeclarator(node, parent, scope, state) {
 			var init = this.get('init');
 			var asmType = init.getData('asmType');
@@ -111,9 +127,6 @@ var funcVisitor = {
 	},
 
 	VariableDeclaration: {
-		enter: function VariableDeclaration(node) {
-			this::assert(node.kind === 'var', 'only var declarations are currently supported');
-		},
 		exit: function VariableDeclaration(node, parent, scope, state) {
 			var expr = state.t.sequenceExpression(node.declarations);
 			if (parent.type === 'ForStatement') {

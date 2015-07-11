@@ -10,9 +10,9 @@
     "better-log": "^1.2.0"
   },
   "scripts": {
-    "build": "babel src --out-dir dist --stage 0",
+    "build": "babel src --out-dir dist",
     "test": "mocha",
-    "watch": "babel src --out-dir dist --stage 0 --watch"
+    "watch": "babel src --out-dir dist --watch"
   },
   "keywords": [
     "babel-plugin"

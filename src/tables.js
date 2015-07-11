@@ -10,7 +10,8 @@ import {
 	Unsigned,
 	Int,
 	Overloaded,
-	Arrow
+	Arrow,
+	Str
 }
 from './types';
 

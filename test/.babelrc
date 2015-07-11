@@ -1,6 +1,5 @@
 {
-    "stage": 0,
     "loose": ["es6.forOf", "es6.classes"],
-    "optional": ["runtime"],
+    "optional": ["runtime", "es7.functionBind"],
     "plugins": ["../dist/index"]
 }
