@@ -13,10 +13,6 @@ module.exports = function ({ Plugin, types: t }) {
 	}
 
 	return new Plugin("asm-js", {
-		metadata: {
-			group: "builtin-modules"
-		},
-
 		visitor: {
 			Program(node, parent, scope, file) {
 				this.skip();
