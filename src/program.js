@@ -105,17 +105,13 @@ export class ProgramState {
 		fullRef.setData('asmType', importRec.type);
 	}
 
-	export(ref, exportedName) {
+	export(ref) {
 		var func = ref.get('declaration');
 		ref::assert(func.isFunctionDeclaration(), 'only immediate function declarations are supported');
 		var id = func.get('id').node;
-		if (exportedName === undefined) {
-			exportedName = id.name;
-		}
-		this.exports.set(exportedName, {
-			uid: ref.scope.generateUidIdentifier(exportedName),
-			local: id,
-			exported: { type: 'Identifier', name: exportedName }
+		this.exports.set(id.name, {
+			uid: ref.scope.generateUidIdentifier(id.name),
+			id
 		});
 	}
 }

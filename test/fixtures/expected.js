@@ -2,10 +2,16 @@
 
 var _selfGlobal = require("babel-runtime/helpers/self-global")["default"];
 
+var _interopRequireDefault = require("babel-runtime/helpers/interop-require-default")["default"];
+
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports["default"] = initialize;
+exports["default"] = setHeap;
+
+var _stuff = require("./stuff");
+
+var _stuff2 = _interopRequireDefault(_stuff);
 
 var selfGlobal = _selfGlobal(),
     foreign = {
@@ -54,10 +60,10 @@ function asm(stdlib, foreign, heap) {
 	};
 }
 
-function initialize(heap) {
-	var _asm;
-
-	return (_asm = asm(selfGlobal, foreign, heap), _geometricMean = _asm.geometricMean, _asm);
+function setHeap(heap) {
+	var exported = asm(selfGlobal, foreign, heap);
+	exports._geometricMean = _geometricMean = exported.geometricMean;
+	return exported;
 }
 
 // directive

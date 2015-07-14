@@ -41,14 +41,15 @@ module.exports = function ({ Plugin, types: t }) {
 				funcBody = funcBody.concat(state.varDecls, state.funcs, state.funcTables);
 				funcBody.push(t.returnStatement(t.objectExpression(Array.from(
 					state.exports.values(),
-					({ exported, local }) => t.property('init', exported, local)
+					({ id }) => t.property('init', id, id)
 				))));
 				var func = t.functionDeclaration(
 					t.identifier('asm'),
 					[t.identifier('stdlib'), t.identifier('foreign'), t.identifier('heap')],
 					t.blockStatement(funcBody)
 				);
-				return t.program([
+				this.replaceWith(t.program([
+					...state.outside,
 					t.variableDeclaration('var', [
 						t.variableDeclarator(
 							t.identifier('selfGlobal'),
@@ -72,18 +73,27 @@ module.exports = function ({ Plugin, types: t }) {
 					))),
 					func,
 					t.exportDefaultDeclaration(t.functionDeclaration(
-						t.identifier('initialize'),
+						t.identifier('setHeap'),
 						[t.identifier('heap')],
-						t.blockStatement([t.returnStatement(t.assignmentExpression(
-							'=',
-							t.objectPattern(Array.from(
+						t.blockStatement([
+							t.variableDeclaration('var', [t.variableDeclarator(
+								t.identifier('exported'),
+								t.callExpression(t.identifier('asm'), ['selfGlobal', 'foreign', 'heap'].map(t.identifier))
+							)]),
+							...Array.from(
 								state.exports.values(),
-								({ exported, uid }) => t.property('init', exported, uid)
-							)),
-							t.callExpression(t.identifier('asm'), ['selfGlobal', 'foreign', 'heap'].map(t.identifier))
-						))])
+								({ uid, id }) => t.expressionStatement(t.assignmentExpression(
+									'=',
+									uid,
+									t.memberExpression(t.identifier('exported'), id)
+								))
+							),
+							t.returnStatement(t.identifier('exported'))
+						])
 					))
-				]);
+				]));
+				file.scope = this.scope;
+		        file.moduleFormatter.constructor.call(file.moduleFormatter, file);
 			}
 		}
 	});
