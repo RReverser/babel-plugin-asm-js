@@ -1,5 +1,5 @@
 import { STDLIB_TYPES, HEAP_VIEW_TYPES } from './tables';
-import { Int, Double, Float, Extern, Str } from './types';
+import { Int, Double, Float, Extern, Str, Intish, Floatish } from './types';
 
 export const GLOBALS = new Map([...STDLIB_TYPES.entries(), ...HEAP_VIEW_TYPES.entries()]);
 
@@ -35,44 +35,64 @@ export function flowToAsm() {
 	return flowToAsmMappings[type];
 }
 
-export function wrap(type, force) {
+export function getWrap(type) {
 	var {node} = this;
-	if (!force) {
-		let asmType = this.getData('asmType');
-		if (asmType.subtype(type)) {
-			return node;
-		}
-	}
 	if (type.subtype(Int)) {
-		return {
+		return node._wrapFor === Int ? node : {
 			type: 'BinaryExpression',
 			left: node,
 			operator: '|',
-			right: { type: 'Literal', value: 0 }
+			right: { type: 'Literal', value: 0 },
+			_wrapFor: Int
 		};
 	}
 	if (type.subtype(Double)) {
-		return {
+		return node._wrapFor === Double ? node : {
 			type: 'UnaryExpression',
 			operator: '+',
-			argument: node
+			argument: node,
+			_wrapFor: Double
 		};
 	}
 	if (type.subtype(Float)) {
-		return {
+		return node._wrapFor === Float ? node : {
 			type: 'CallExpression',
 			callee: {
 				type: 'MemberExpression',
 				object: { type: 'Identifier', name: 'Math' },
 				property: { type: 'Identifier', name: 'fround' }
 			},
-			arguments: [node]
+			arguments: [node],
+			_wrapFor: Float
 		};
 	}
 	if (type.subtype(Extern)) {
 		return node;
 	}
-	this::typeError(`can\'t wrap into type ${type}`);
+	this::typeError(`cannot wrap into type ${type}`);	
+}
+
+export function replaceWrap(type, force) {
+	if (!force) {
+		let asmType = this.getData('asmType');
+		if (asmType && asmType.subtype(type)) {
+			return this;
+		}
+	}
+	this.replaceWith(this::getWrap(type));
+	this.setData('asmType', type);
+	return this;
+}
+
+export function unish() {
+	var asmType = this.getData('asmType');
+	if (asmType.equals(Intish)) {
+		return this::replaceWrap(Int);
+	}
+	if (asmType.equals(Floatish)) {
+		return this::replaceWrap(Float);
+	}
+	return this;
 }
 
 export function validateType(path, expectedType) {

@@ -1,4 +1,4 @@
-import { assert, typeError, validateType, wrap, flowToAsm } from './util';
+import { assert, typeError, validateType, getWrap, replaceWrap, flowToAsm, unish } from './util';
 import { Fixnum, Unsigned, Double, Arrow, Overloaded, Int, Intish, Str } from './types';
 import { UNOPS, BINOPS } from './tables';
 
@@ -23,6 +23,7 @@ var funcVisitor = {
 			for (let type of opTypes) {
 				if (argType.subtype(type.params[0])) {
 					this.setData('asmType', type.result);
+					this::unish();
 					return;
 				}
 			}
@@ -38,6 +39,7 @@ var funcVisitor = {
 			for (let type of opTypes) {
 				if (leftType.subtype(type.params[0]) && rightType.subtype(type.params[1])) {
 					this.setData('asmType', type.result);
+					this::unish();
 					return;
 				}
 			}
@@ -98,7 +100,7 @@ var funcVisitor = {
 					node
 				];
 			}
-			node.argument = this.get('argument')::wrap(state.returnType, true);
+			this.get('argument')::replaceWrap(state.returnType, true);
 		}
 	},
 
@@ -140,8 +142,7 @@ var funcVisitor = {
 	AssignmentExpression: {
 		exit: function AssignmentExpression(node, parent, scope, state) {
 			var asmType = scope.getBinding(node.left.name).path.getData('asmType');
-			var right = this.get('right');
-			right.replaceWith(right::wrap(asmType));
+			this.get('right')::replaceWrap(asmType);
 		}
 	},
 
@@ -150,8 +151,7 @@ var funcVisitor = {
 			var callee = this.get('callee');
 			callee::assert(callee.node.type === 'Identifier', 'only calls to direct identifiers are possible');
 			var resultType = callee.getData('asmType').result;
-			this.setData('asmType', resultType);
-			this.replaceWith(this::wrap(resultType, true));
+			this::replaceWrap(resultType, true)::unish();
 		}
 	},
 
@@ -159,7 +159,7 @@ var funcVisitor = {
 		exit: function TypeCastExpression(node) {
 			var asmType = this.get('typeAnnotation')::flowToAsm();
 			this.setData('asmType', asmType);
-			return this.get('expression')::wrap(asmType);
+			return this.get('expression')::getWrap(asmType);
 		}
 	}
 };
@@ -183,7 +183,7 @@ export default function visit(programState) {
 		return programState.t.expressionStatement(programState.t.assignmentExpression(
 			'=',
 			node,
-			param::wrap(asmType, true)
+			param::getWrap(asmType)
 		));
 	});
 	var returnType = this.get('returnType')::flowToAsm();

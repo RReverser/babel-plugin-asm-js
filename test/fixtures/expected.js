@@ -53,7 +53,7 @@ function asm(stdlib, foreign, heap) {
 		end = end | 0;
 
 		_console$log_func(start, end);
-		return + +_Math$exp(+logSum(start, end) / +(end - start | 0));
+		return +_Math$exp(+logSum(start, end) / +(end - start | 0));
 	}
 	return {
 		geometricMean: geometricMean
